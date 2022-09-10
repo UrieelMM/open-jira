@@ -18,6 +18,8 @@ export default async function handler(
   switch (req.method) {
     case "PUT":
       return updateEntry(req, res);
+    case "GET":
+      return getEntry(req, res);
     default:
       return res.status(400).json({ message: "Bad request" });
   }
@@ -49,5 +51,20 @@ const updateEntry = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
     return res.status(200).json(updatedEntry!);
   } catch (error) {
     return res.status(400).json({ message: "Bad request" });
+  }
+};
+
+const getEntry = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
+  const { id } = req.query;
+
+  await db.disconnectDB();
+
+  const entryFind = await EntryModel.findById(id);
+
+  if (!entryFind) {
+    await db.connectDB();
+    return res.status(404).json({ message: "Entry not found" });
+  } else {
+    return res.status(200).json(entryFind);
   }
 };
