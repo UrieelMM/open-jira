@@ -5,7 +5,8 @@ import { InterfaceEntry } from "../../../models/Entry";
 
 type Data =
   | { message: string }
-  | { message: string; entries: InterfaceEntry[] };
+  | { entries: InterfaceEntry[] }
+  | InterfaceEntry;
 
 export default async function handler(
   req: NextApiRequest,
@@ -14,6 +15,8 @@ export default async function handler(
   switch (req.method) {
     case "GET":
       return getEntries(res);
+    case "POST":
+      return postEntry(req, res);
     default:
       res.status(400).json({ message: "Bad request" });
   }
@@ -23,5 +26,24 @@ const getEntries = async (res: NextApiResponse<Data>) => {
   await db.connectDB();
   const entries = await EntryModel.find().sort({ createdAt: "ascending" });
   await db.disconnectDB();
-  res.status(200).json({ message: "Success", entries });
+  return res.status(200).json({ entries });
+};
+
+const postEntry = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
+  const { description = "" } = req.body;
+  const newEntry = new EntryModel({
+    description,
+    createdAt: Date.now(),
+  });
+
+  try {
+    await db.connectDB();
+    await newEntry.save();
+    await db.disconnectDB();
+    return res.status(201).json(newEntry);
+  } catch (error) {
+    await db.disconnectDB();
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };

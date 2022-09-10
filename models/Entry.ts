@@ -17,6 +17,7 @@ const entrySchema = new Schema({
       values: ["pending", "in-progress", "finished"],
       message: "Status must be either pending, in-progress or finished",
     },
+    default: "pending",
   },
 });
 
