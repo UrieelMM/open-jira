@@ -18,7 +18,7 @@ export default async function handler(
     case "POST":
       return postEntry(req, res);
     default:
-      res.status(400).json({ message: "Bad request" });
+      return res.status(400).json({ message: "Bad request" });
   }
 }
 
